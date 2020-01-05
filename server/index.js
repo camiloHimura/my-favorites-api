@@ -27,7 +27,7 @@ module.exports = {
             await db.connect();
             App.listen(config.port, () => console.log(`App Running port ${config.port}`));
         }catch(error){
-            console.log("milo index error", error)
+            console.log("Milo index error", error)
         }
     }
 }
