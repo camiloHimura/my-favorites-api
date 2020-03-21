@@ -4,9 +4,9 @@
   "description": "node api - mongo",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec npm run server",
-    "start:dev": "nodemon --exec env-cmd -f ./config/dev.env npm run server",
-    "start:prod": "NODE_ENV=prod nodemon --exec npm run server",
+    "start": "nodemon -e js --exec npm run server",
+    "start:dev": "nodemon -e js --exec env-cmd -f ./config/dev.env npm run server",
+    "start:prod": "NODE_ENV=prod nodemon -e js --exec npm run server",
     "server": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
