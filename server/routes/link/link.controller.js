@@ -18,8 +18,8 @@ const arrayFormat = data => data.reduce((accum, current) => [...accum, format(cu
 module.exports = {
   ...crud(LinkModel, {format, arrayFormat}),
   createWithTag: createWithTag(LinkModel, format),
-  findOneWithTag: findOneWithTag(LinkModel, format),
   findAllWithTag: findAllWithTag(LinkModel, arrayFormat),
+  findOneWithTag: findOneWithTag(LinkModel, format),
   findAllByTags: findAllByTags(LinkModel, arrayFormat),
   removeTag: removeTag(LinkModel, format),
 }

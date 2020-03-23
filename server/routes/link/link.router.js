@@ -7,6 +7,9 @@ LinkRouter.route("/")
     .put(createWithTag)
     .get(findAllWithTag);
 
+LinkRouter.route("/byTags")
+    .get(findAllByTags)
+
 LinkRouter.route("/byTags/:tagIds")
     .get(findAllByTags)
 
