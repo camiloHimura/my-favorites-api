@@ -8,6 +8,7 @@
     "start:dev": "nodemon -e js --exec env-cmd -f ./config/dev.env npm run server",
     "start:prod": "NODE_ENV=prod nodemon -e js --exec npm run server",
     "server": "node index.js",
+    "test:watch": "env-cmd -f ./config/test.env jest --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -18,14 +19,19 @@
   ],
   "author": "camiloHimura",
   "license": "ISC",
+  "jest": {
+    "testEnvironment": "node"
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongoose": "^5.5.14",
-    "nodemon": "^1.19.1"
+    "mongoose": "^5.5.14"
   },
   "devDependencies": {
-    "env-cmd": "^10.0.1"
+    "nodemon": "^1.19.1",
+    "env-cmd": "^10.0.1",
+    "jest": "^25.2.7",
+    "supertest": "^4.0.2"
   }
 }

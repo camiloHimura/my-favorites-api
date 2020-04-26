@@ -36,7 +36,7 @@ const findOne = (model, {format}) => async (req, res) => {
   }
 }
 
-const findAndremove = (model, {format}) => async (req, res) => {
+const findAndremove = (model) => async (req, res) => {
   try{
     let data = await model.findOneAndDelete({_id: req.params.id}).exec();
     if(!data){ return res.status(400).end() }
