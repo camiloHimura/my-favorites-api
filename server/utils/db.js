@@ -6,6 +6,6 @@ module.exports = {
     mongoose.connect(dbUrl, { useNewUrlParser: true });
   },
   close() {
-    mongoose.close();
+    mongoose.connection.close()
   },
 }

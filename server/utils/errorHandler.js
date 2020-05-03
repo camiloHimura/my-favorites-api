@@ -10,9 +10,9 @@ const getInfo = errmsg => ({
 
 module.exports = (error, res) => {
     //console.trace("------ ErrorHAndle catch ------");
-    console.log("------ ErrorHAndle catch ------");
+/*     console.log("------ ErrorHAndle catch ------");
     console.log(error.message);
-    console.log(error.errmsg);
+    console.log(error.errmsg); */
 
     let errorInfo = getInfo(error.errmsg);
     let info = "";

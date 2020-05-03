@@ -1,4 +1,4 @@
-const errorHandle = require("../utils/errorHandler");
+const errorHandle = require("../errorHandler");
 
 const create = (model, {format}) => async (req, res) => {
   try{
