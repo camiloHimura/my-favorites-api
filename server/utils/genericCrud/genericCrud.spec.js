@@ -1,116 +1,121 @@
-const request = require('supertest');
-const mongoose = require("mongoose");
-const App = require('../../index');
-const db = require('../db');
-const {router, CrudModel} = require('./router');
+const request = require("supertest");
+const App = require("../../index");
+const db = require("../db");
+const { router, CrudModel } = require("./router");
+const { SAVED, REMOVED, UPDATED } = require("../../routes/constants");
+const dropAllCollections = require("../test/dropAllCollections");
+const inserManyDocs = require("../test/inserManyDocs");
 
 App.use("/genericCrud", router);
-let numDocs;
-let ids;
-const errorObj = {error: true, messaje: expect.any(String)}
+let newDocs;
+const numDocs = 5;
+const errorObj = { error: true, messaje: expect.any(String) };
 
 beforeAll(async () => {
-  console.log('------ beforeAll ------')
   await db.connect();
-  console.log('------ beforeAll Done ------')
+  newDocs = await inserManyDocs(CrudModel, numDocs, { title: "title test" });
 });
 
 afterAll(async () => {
-  console.log('------ afterAll ------')
+  await dropAllCollections();
   await db.close();
-  console.log('------ afterAll Done ------')
 });
 
-beforeEach(async () => {
-  numDocs = 5;
-  await CrudModel.deleteMany();
-  ids = await inserManyDocs(numDocs);
-})
+test("create", async () => {
+  const data = { title: "crud create doc test" };
+  const response = await request(App)
+    .post("/genericCrud/create")
+    .send(data)
+    .expect(201);
 
-test('create', async () => {
-  console.log('-- create --')
-  const data = { title: 'crud create doc test'};
-  const response = await request(App).post('/genericCrud/create').send(data).expect(201);
-  
   expect(response.body.data).not.toBeNull();
-  expect(response.body.status).toBe('saved')
-  expect(response.body.data.title).toBe(response.body.data.title)
-})
+  expect(response.body.status).toBe(SAVED);
+  expect(response.body.data.title).toBe(response.body.data.title);
+});
 
-test('find all', async () => {
-  console.log('-- find all --')
-  const response = await request(App).get('/genericCrud/findAll')
-  .send()
-  .expect(200)
-  expect(response.body.length).toBe(numDocs)
-})
+test("find all", async () => {
+  const response = await request(App)
+    .get("/genericCrud/findAll")
+    .send()
+    .expect(200);
 
-test('findOne', async () => {
-  console.log('-- find one --')
+  expect(response.body.length).toBeGreaterThanOrEqual(numDocs);
+  [...newDocs].forEach((info) => {
+    expect(
+      response.body.some((data) => String(data._id) === String(info._id))
+    ).toBe(true);
+  });
+});
 
-  const response = await request(App).get(`/genericCrud/findOne/${ids[numDocs - 1]}`)
-                    .send()
-                    .expect(200)
+test("findOne", async () => {
+  const data = {
+    __v: newDocs[0].__v,
+    _id: String(newDocs[0]._id),
+    title: newDocs[0].title,
+  };
 
-  expect(response.body.data).not.toBeNull()
-})
+  const response = await request(App)
+    .get(`/genericCrud/findOne/${data._id}`)
+    .send()
+    .expect(200);
 
-test('findOne invalid ID', async () => {
-  console.log('-- findOne invalid ID --')
+  expect(response.body).toBeTruthy();
+  expect(response.body).toEqual(data);
+});
 
-  const response = await request(App).get(`/genericCrud/findOne/000`)
-                    .send()
-                    .expect(404)
+test("findOne invalid ID", async () => {
+  const response = await request(App)
+    .get(`/genericCrud/findOne/000`)
+    .send()
+    .expect(404);
 
-  expect(response.body).toMatchObject(errorObj)
-})
+  expect(response.body).toMatchObject(errorObj);
+});
 
-test('findAndUpdate', async () => {
-  console.log('-- findAndUpdate --')
-  const newTitle = 'new crud test';
-  const response = await request(App).post(`/genericCrud/findAndUpdate/${ids[numDocs - 1]}`)
-                    .send({ title: newTitle})
-                    .expect(200)
+test("findAndUpdate, valid Id", async () => {
+  const data = {
+    __v: newDocs[1].__v,
+    _id: String(newDocs[1]._id),
+    title: newDocs[1].title,
+  };
 
-  expect(response.body.status).toBe('updated')
-  expect(response.body.data).not.toBeNull()
-  expect(response.body.data.title).toBe(newTitle)
+  const newTitle = "new crud test";
+  const response = await request(App)
+    .post(`/genericCrud/findAndUpdate/${data._id}`)
+    .send({ title: newTitle })
+    .expect(200);
 
-})
+  expect(response.body.status).toBe(UPDATED);
+  expect(response.body.data).not.toBeNull();
+  expect(response.body.data.title).toBe(newTitle);
+});
 
-test('findAndUpdate invalid ID', async () => {
-  console.log('-- findOne invalid ID --')
+test("findAndUpdate, invalid ID", async () => {
+  const response = await request(App)
+    .post(`/genericCrud/findAndUpdate/000`)
+    .send()
+    .expect(404);
 
-  const response = await request(App).post(`/genericCrud/findAndUpdate/000`)
-                    .send()
-                    .expect(404)
+  expect(response.body).toEqual(errorObj);
+});
 
-  expect(response.body).toEqual(errorObj)
-})
+test("findAndremove ", async () => {
+  const _id = newDocs[2]._id;
+  const response = await request(App)
+    .get(`/genericCrud/findAndremove/${_id}`)
+    .send()
+    .expect(200);
 
-test('findAndremove ', async () => {
-  console.log('-- findAndremove --')
-  await request(App).get(`/genericCrud/findAndremove/${ids[0]}`)
-          .send()
-          .expect(200)
-})
+  const doc = await CrudModel.findOne({ _id });
+  expect(response.body.status).toBe(REMOVED);
+  expect(doc).toBeNull();
+});
 
-test('findAndremove invalid ID', async () => {
-  console.log('-- findAndremove --')
-  const response = await request(App).get(`/genericCrud/findAndremove/000`)
-                    .send()
-                    .expect(404);
-  
-  expect(response.body).toEqual(errorObj)
-})
+test("findAndremove invalid ID", async () => {
+  const response = await request(App)
+    .get(`/genericCrud/findAndremove/000`)
+    .send()
+    .expect(404);
 
-function inserManyDocs(length) {
-  const ids = [];
-
-  return Promise.all(Array.from({length}, (_, index) => {
-    const id = new mongoose.Types.ObjectId();
-    ids.push(id);
-    return CrudModel.create({_id: id, title: `test ${index}` })
-  }))
-  .then(() => ids)
-}
+  expect(response.body).toEqual(errorObj);
+});

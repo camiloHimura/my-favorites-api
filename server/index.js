@@ -9,12 +9,14 @@ const errorHandler = require("./utils/errorHandler");
 const App = express();
 App.use(cors());
 App.use(json());
-
-App.use ((error, req, res, next) => {
-    if(error){ errorHandler(error, res) }
+// Error-handling middleware always takes four arguments
+App.use((error, req, res, next) => {
+  if (error) {
+    errorHandler(error, res);
+  }
 });
 
-App.use(urlencoded());
+App.use(urlencoded({ extended: true }));
 
 App.use("/api/tag", tagRouter);
 App.use("/api/link", linkRouter);
